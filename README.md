@@ -1,6 +1,13 @@
 # mTSP-work
 keeping track of algorithm implementations for mTSP (multiple travelling salesmen)
 
+### To-dos
+- [x] Implementations of deterministic and heuristic approaches for TSP problem
+- [x] Results of TSP approaches
+- [ ] Implementations of approaches for mTSP problem
+  - [ ] decomposition
+  - [ ] approximation
+
 ### Problem statement
 Given `N (N >= 1)` salesmen and `C (C >= 4)` cities that needs to be visited, find an optimal route for each saleman such that meet the following requirements:
   1. each city is visited exactly once
@@ -14,9 +21,9 @@ This type of problem is considered to be NP-hard. Read more on the problem [here
 # Approaches
 There are several ways to solve mTSP, but one basic solution is to build from the solution of the TSP (travelling saleman) problem, where `N = 1`.
 
----
 ## Approaches for TSP problem
-The following list the algorithms included in this repository for solving the TSP problem
+TSP is a specific case of mTSP (or mTSP is a generic case of TSP) in which `N = 1`.  All other constraints remain.  Compares to mTSP, TSP is a smaller and simpler problem; however, it's NP complexity remains.  There are several approaches for solving TSP problem.  The two main approaches are exact solution (deterministic approach) and near-optimal solution (heuristics).
+The following list the algorithms included in this repository for solving the TSP problem.
 
 ### Exact solution using Dynamic Programming (DP)
 The details of the algorithm can be found [here](https://en.wikipedia.org/wiki/Held%E2%80%93Karp_algorithm#:~:text=The%20Held%E2%80%93Karp%20algorithm%2C%20also,to%20find%20a%20minimum%2Dlength)

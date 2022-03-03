@@ -4,6 +4,7 @@ keeping track of algorithm implementations for mTSP (multiple travelling salesme
 ### To-dos
 - [x] Implementations of deterministic and heuristic approaches for TSP problem
 - [x] Results of TSP approaches
+- [ ] Enforce resource/distance constraint
 - [ ] Implementations of approaches for mTSP problem
   - [ ] decomposition
   - [ ] approximation

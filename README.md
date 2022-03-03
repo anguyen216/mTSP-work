@@ -50,7 +50,6 @@ Additionally, the following graph investigate the solutions output by this algor
 
 <img src="./plots/opt2_cost_check.png" width="500">
 
----
 ## Approaches for mTSP problem
 The following list the algorithms included in this repository for solving the mTSP problem
 

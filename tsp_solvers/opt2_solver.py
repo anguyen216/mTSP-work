@@ -45,14 +45,14 @@ class OPT2_TSP():
             route = best
         return best, self.cost(best)
 
-    def solve(self, start_coord):
+    def solve(self, start_coord, iter=10):
         # run opt2 10 times with different randomization of initial
         # route to decrease the algorithm sensitivity to initial route
         start = self.coords_dict[start_coord]
         num_v = len(self.G)
         vertices = [i for i in range(num_v) if i != start]
         opt_route, best_cost = [], float("inf")
-        for _ in range(10):
+        for _ in range(iter):
             init_route = [start]
             tmp = random.sample(vertices, len(vertices))
             init_route.extend(tmp)

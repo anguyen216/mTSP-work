@@ -1,5 +1,6 @@
 ## Includes utility functions for mTSP and TSP problems
 import numpy as np
+from scipy.stats import qmc  # need scipy 1.7+
 import matplotlib.pyplot as plt
 
 def eucDist(v1, v2):
@@ -43,16 +44,44 @@ def constructGraph(vertices_dict, distFunc):
                 G[i][j] = distFunc(p1, p2)
     return G
 
-def plotPath(path):
+def sobolSamples(num_samples, min_point, max_point):
+    # given number of samples, min_point and max_point
+    # output samples that have low discrepancy/high spread
+    # Input:
+    #   - num_samples - int: best if it's a power of 2
+    #   - min_point - [lat, lon] of the bottom left of a squared area
+    #   - max_point - [lat, lon] of the top right of a squared area
+    # Output: np.array of sample points that are widespread over the
+    #   squared area of interest
+    sampler = qmc.Sobol(d=2)
+    pow = int(np.ceil(np.log2(num_samples)))
+    points = sampler.random_base2(m=pow)
+    return qmc.scale(points, min_point, max_point)
+
+def plotSamples(coords, plot_name):
+    lons = coords[:, 1]
+    lats = coords[:, 0]
+    plt.scatter(lons, lats)
+    plt.xlabel('longitude')
+    plt.ylabel('latitude')
+    plt.title('plotting sampling points in lon-lat coordinates')
+    plt.savefig(plot_name)
+    plt.show()
+
+def plotPath(path, plot_name):
     lons = np.array([coord[1] for coord in path])
     lats = np.array([coord[0] for coord in path])
     plt.scatter(lons, lats)
     plt.plot(lons, lats, "-")
     plt.plot(lons[0], lats[0], "ro")    # starting point: red
     plt.plot(lons[-2], lats[-2], "mo")  # penultimate point: magenta
-    #plt.savefig("test.png")
+    plt.savefig(plot_name)
     plt.show()
 
+# bot = (38.907192, -77.036873)  # DC
+# top = (40.712776, -74.005974)  # NYC
+# coords = sobolSamples(25, bot, top)
+# plotSamples(coords, "./plots/test_samples25.png")
 
 #p1 = [40.689202777778, -74.044219444444]
 #p2 = [38.889069444444, -77.034502777778]

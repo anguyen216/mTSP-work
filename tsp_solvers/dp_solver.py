@@ -1,6 +1,6 @@
 import numpy as np
 from itertools import permutations
-from tsp_solvers.utils import constructGraph
+from utils import constructGraph
 
 class DP_TSP():
     """

@@ -4,7 +4,7 @@
 #   given user-input starting point
 from mip import Model, xsum, minimize, BINARY
 from itertools import product
-from tsp_solvers.utils import constructGraph
+from utils import constructGraph
 
 class ILP_TSP():
     """

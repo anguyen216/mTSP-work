@@ -2,7 +2,7 @@
 # Author: Anh Nguyen
 import numpy as np
 import matplotlib.pyplot as plt
-from tsp_solvers.utils import longLatDist, plotPath
+from utils import longLatDist, plotPath
 from tsp_solvers.dp_solver import DP_TSP
 from tsp_solvers.ILP_solver import ILP_TSP
 from tsp_solvers.opt2_solver import OPT2_TSP

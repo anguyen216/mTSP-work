@@ -4,7 +4,7 @@
 # https://en.wikipedia.org/wiki/2-opt
 import numpy as np
 import random
-from tsp_solvers.utils import constructGraph, eucDist
+from utils import constructGraph, eucDist
 
 class OPT2_TSP():
     """

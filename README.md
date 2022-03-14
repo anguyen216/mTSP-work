@@ -4,13 +4,19 @@ keeping track of algorithm implementations for mTSP (multiple travelling salesme
 ### To-dos
 - [x] Implementations of deterministic and heuristic approaches for TSP problem
 - [x] Results of TSP approaches
+- [x] Add sampling function to create a series of interest points that are widespread given a squared boundary of area of interest
 - [ ] Enforce resource/distance constraint
 - [ ] Implementations of approaches for mTSP problem
   - [ ] decomposition
   - [ ] approximation
 
+# How to run the code 
+Examples of how the solvers should be run are shown in `main.py`.  The examples are run using random cities coordinates (included in `cities.py`).  A custom `main` file can be written to run the solvers based on your specific need.  The current solvers will take in both `xy-coordinate` and `longitude-latitude coordinates`.  Currently, the distance between points of interest are computed using either Euclidian distance or earth surface distance formula.  If the distance between your points of interest are computed differently, please supply the distance function yourself and use it as input for the solvers. 
+
+---
+# Concepts and results
 ### Problem statement
-Given `N (N >= 1)` salesmen and `C (C >= 4)` cities that needs to be visited, find an optimal route for each saleman such that meet the following requirements:
+Given `N (N >= 1)` salesmen and `C (C >= 4)` cities that needs to be visited, find an optimal route for each saleman that meet the following requirements:
   1. each city is visited exactly once
   2. all salesmen start and finish their route at the same city
   3. the total distance of each tour is the shortest distance that meets the above requirement
@@ -18,7 +24,6 @@ Given that (1) the salesmen can visit any city from any other cities in the netw
 
 This type of problem is considered to be NP-hard. Read more on the problem [here](https://en.wikipedia.org/wiki/Travelling_salesman_problem) and [here](https://neos-guide.org/content/multiple-traveling-salesman-problem-mtsp)
 
----
 # Approaches
 There are several ways to solve mTSP, but one basic solution is to build from the solution of the TSP (travelling saleman) problem, where `N = 1`.
 

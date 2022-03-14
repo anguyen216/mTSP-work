@@ -55,7 +55,9 @@ def sobolSamples(num_samples, min_point, max_point):
     #   squared area of interest
     sampler = qmc.Sobol(d=2)
     pow = int(np.ceil(np.log2(num_samples)))
+    indices = np.random.choice(2**pow, num_samples, replace=False)
     points = sampler.random_base2(m=pow)
+    points = points[indices, :]
     return qmc.scale(points, min_point, max_point)
 
 def plotSamples(coords, plot_name):
@@ -78,10 +80,10 @@ def plotPath(path, plot_name):
     plt.savefig(plot_name)
     plt.show()
 
-# bot = (38.907192, -77.036873)  # DC
-# top = (40.712776, -74.005974)  # NYC
-# coords = sobolSamples(25, bot, top)
-# plotSamples(coords, "./plots/test_samples25.png")
+bot = (38.907192, -77.036873)  # DC
+top = (40.712776, -74.005974)  # NYC
+coords = sobolSamples(40, bot, top)
+plotSamples(coords, "./plots/test_samples40.png")
 
 #p1 = [40.689202777778, -74.044219444444]
 #p2 = [38.889069444444, -77.034502777778]

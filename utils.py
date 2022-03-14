@@ -80,10 +80,10 @@ def plotPath(path, plot_name):
     plt.savefig(plot_name)
     plt.show()
 
-bot = (38.907192, -77.036873)  # DC
-top = (40.712776, -74.005974)  # NYC
-coords = sobolSamples(40, bot, top)
-plotSamples(coords, "./plots/test_samples40.png")
+# bot = (38.907192, -77.036873)  # DC
+# top = (40.712776, -74.005974)  # NYC
+# coords = sobolSamples(40, bot, top)
+# plotSamples(coords, "./plots/test_samples40.png")
 
 #p1 = [40.689202777778, -74.044219444444]
 #p2 = [38.889069444444, -77.034502777778]

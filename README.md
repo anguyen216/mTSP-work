@@ -5,10 +5,20 @@ keeping track of algorithm implementations for mTSP (multiple travelling salesme
 - [x] Implementations of deterministic and heuristic approaches for TSP problem
 - [x] Results of TSP approaches
 - [x] Add sampling function to create a series of interest points that are widespread given a squared boundary of area of interest
+- [x] Add requirements to run the solvers in this repo
+  - [ ] Update requirements to run the solvers in this repo
 - [ ] Enforce resource/distance constraint
 - [ ] Implementations of approaches for mTSP problem
   - [ ] decomposition
   - [ ] approximation
+
+# Requirements
+```
+python=3.10.2
+matplotlib=3.5.1
+numpy=1.22.3
+scipy=1.7.3
+```
 
 # How to run the code 
 Examples of how the solvers should be run are shown in `main.py`.  The examples are run using random cities coordinates (included in `cities.py`).  A custom `main` file can be written to run the solvers based on your specific need.  The current solvers will take in both `xy-coordinate` and `longitude-latitude coordinates`.  Currently, the distance between points of interest are computed using either Euclidian distance or earth surface distance formula.  If the distance between your points of interest are computed differently, please supply the distance function yourself and use it as input for the solvers. 

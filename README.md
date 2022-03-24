@@ -10,7 +10,7 @@ keeping track of algorithm implementations for mTSP (multiple travelling salesme
 - [ ] Enforce resource/distance constraint
 - [ ] Implementations of approaches for mTSP problem
   - [ ] decomposition
-  - [ ] approximation
+  - [x] approximation with uniform distance constraint
 
 # Requirements
 ```
@@ -18,6 +18,7 @@ python=3.10.2
 matplotlib=3.5.1
 numpy=1.22.3
 scipy=1.7.3
+mip=1.13.0
 ```
 
 Google OR-tools.  Documentation of this library can be found [here](https://developers.google.com/optimization)

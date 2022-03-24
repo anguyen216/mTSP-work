@@ -20,6 +20,12 @@ numpy=1.22.3
 scipy=1.7.3
 ```
 
+Google OR-tools.  Documentation of this library can be found [here](https://developers.google.com/optimization)
+```
+# Installation
+python -m pip install --upgrade --user ortools
+```
+
 # How to run the code 
 Examples of how the solvers should be run are shown in `main.py`.  The examples are run using random cities coordinates (included in `cities.py`).  A custom `main` file can be written to run the solvers based on your specific need.  The current solvers will take in both `xy-coordinate` and `longitude-latitude coordinates`.  Currently, the distance between points of interest are computed using either Euclidian distance or earth surface distance formula.  If the distance between your points of interest are computed differently, please supply the distance function yourself and use it as input for the solvers. 
 

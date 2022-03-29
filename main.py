@@ -7,6 +7,7 @@ from tsp_solvers.dp_solver import DP_TSP
 from tsp_solvers.ILP_solver import ILP_TSP
 from tsp_solvers.opt2_solver import OPT2_TSP
 from cities import WAYPOINTS, NAMES_DICT
+from mtsp_solvers.basic_solver import BASIC_MTSP
 import time
 
 def main():
@@ -20,6 +21,12 @@ def main():
     # ilp_runtime = []
     ilp_sizes = [i for i in range(3, 26, 3)]
     # dp_sizes = [i for i in range(3, 13, 3)]
+
+    # testing basic mTSP solver
+    indices = np.random.randint(0, 26, size=17)
+    waypoints = [WAYPOINTS[idx] for idx in indices]
+    start = 0
+    
 
     # Check OPT-2 near-optimal solution
     # for s in ilp_sizes:

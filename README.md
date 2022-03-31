@@ -22,13 +22,17 @@ mip=1.13.0
 ```
 
 Google OR-tools.  Documentation of this library can be found [here](https://developers.google.com/optimization)
+
+Installation
 ```
-# Installation
 python -m pip install --upgrade --user ortools
 ```
 
 # How to run the code 
-Examples of how the solvers should be run are shown in `main.py`.  The examples are run using random cities coordinates (included in `cities.py`).  A custom `main` file can be written to run the solvers based on your specific need.  The current solvers will take in both `xy-coordinate` and `longitude-latitude coordinates`.  Currently, the distance between points of interest are computed using either Euclidian distance or earth surface distance formula.  If the distance between your points of interest are computed differently, please supply the distance function yourself and use it as input for the solvers. 
+Examples of how the solvers should be run are shown in `main.py`.  The examples are run using random cities coordinates (included in `cities.py`).  A custom `main` file can be written to run the solvers based on your specific need.  The current solvers will take in both `xy-coordinate` and `longitude-latitude coordinates`.  Currently, the distance between points of interest are computed using either Euclidian distance or earth surface distance formula.  If the distance between your points of interest are computed differently, please supply the distance function yourself and use it as input for the solvers.
+
+#### For mTSP solver
+The current mTSP solver uses Google OR-tools library for Python to solve the mTSP problem.  **The distance matrix and vehicle limit distance need to be an integer for the solver to work correctly.**  The solver, besides returning the route for each vehicle in coordinate format, will print out the route (in node format) and distance traveled of each vehicle to the terminal for debugging.  Follow the `main.py` file to see how to extract route in coordinate format for your own use. 
 
 ---
 # Concepts and results
@@ -73,7 +77,18 @@ Additionally, the following graph investigate the solutions output by this algor
 
 <img src="./plots/opt2_cost_check.png" width="500">
 
-## Approaches for mTSP problem
-The following list the algorithms included in this repository for solving the mTSP problem
+## Approach for mTSP problem
+The mTSP solver used in this repo relied on Google OR-tools for Python.  More information on this library can be found [here](https://developers.google.com/optimization)
 
-**To be updated**
+For large set of nodes, the library can only approximate the solution.  This solver uses the `guided local search` (more info [here](https://developers.google.com/optimization/routing/routing_options#local_search_options), and [here](https://en.wikipedia.org/wiki/Guided_Local_Search)).  By default, the solver will return a solution (or report that no solution is found) within 30 seconds.  However, this can be changed by changing `time_limit` parameter of the solver.
+
+#### Example of solver output
+The block below shows an example of what the solver will print out to terminal
+```
+
+```
+
+**Solver limitation**
+- This solver will only take in distance matrix and vehicle limits in integer format.  The implementation will still take distance function and distance matrix in float format, but the distance will be automatically round up to the next integer.  Please consider this when providing distance matrix and implementing your own distance function.
+- Additionally, because of the above, please only provide `v_limits` in integer format
+- This solver looks for a solution that covers all given nodes (in the `waypoints` list).  If no such solution exist, it is considered to have no solution.  The solver will not drop points for you to create a solution.  Please consider this when providing `waypoints` and `v_limits`

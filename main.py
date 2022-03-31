@@ -2,7 +2,7 @@
 # Author: Anh Nguyen
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import longLatDist, plotPath
+from utils import longLatDist, plotPath, plotMultiplePaths
 from tsp_solvers.dp_solver import DP_TSP
 from tsp_solvers.ILP_solver import ILP_TSP
 from tsp_solvers.opt2_solver import OPT2_TSP
@@ -23,10 +23,19 @@ def main():
     # dp_sizes = [i for i in range(3, 13, 3)]
 
     # testing basic mTSP solver
-    indices = np.random.randint(0, 26, size=17)
+    indices = np.random.choice(40, size=15, replace=False)
     waypoints = [WAYPOINTS[idx] for idx in indices]
-    start = 0
-    
+    start = np.random.randint(0, len(waypoints))
+    bmtsp = BASIC_MTSP(waypoints, longLatDist)
+    num_v = 2
+    colors = ['steelblue', 'orange']
+    v_limits = [100000] * num_v
+    sol = bmtsp.solve(waypoints[start], num_v, v_limits)
+    if sol:
+        paths, cost = sol
+        print("Total distance traveled by all vehicles:", cost, "km")
+        plotMultiplePaths(paths, colors, "./plots/sample_mtsp_result.png")
+
 
     # Check OPT-2 near-optimal solution
     # for s in ilp_sizes:

@@ -67,7 +67,7 @@ def plotSamples(coords, plot_name):
     plt.xlabel('longitude')
     plt.ylabel('latitude')
     plt.title('plotting sampling points in lon-lat coordinates')
-    plt.savefig(plot_name)
+    plt.savefig(plot_name, dpi=300)
     plt.show()
 
 def plotPath(path, plot_name):
@@ -77,7 +77,18 @@ def plotPath(path, plot_name):
     plt.plot(lons, lats, "-")
     plt.plot(lons[0], lats[0], "ro")    # starting point: red
     plt.plot(lons[-2], lats[-2], "mo")  # penultimate point: magenta
-    plt.savefig(plot_name)
+    plt.savefig(plot_name, dpi=300)
+    plt.show()
+
+def plotMultiplePaths(paths, colors, plot_name):
+    for i in range(len(paths)):
+        route = paths[i]
+        lons = np.array([coord[1] for coord in route])
+        lats = np.array([coord[0] for coord in route])
+        plt.scatter(lons, lats)
+        lab = 'vehicle ' + str(i) + ' route'
+        plt.plot(lons, lats, '-', c=colors[i], label=lab)
+    plt.savefig(plot_name, dpi=300)
     plt.show()
 
 # bot = (38.907192, -77.036873)  # DC

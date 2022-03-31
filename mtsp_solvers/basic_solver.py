@@ -16,8 +16,9 @@ class BASIC_MTSP():
         self.coords_dict = {coord: i for i, coord in enumerate(coordinates)}
         self.data = dict()
         mat = constructGraph(self.vertices_dict, distFunc)
-        # convert distance matrix to meter for the rest of the code
-        self.data['distance_matrix'] = (np.array(mat) * 1000).tolist()
+        # convert distance matrix to integer values; values are round
+        #   up to the next integer
+        self.data['distance_matrix'] = np.ceil(mat).astype(int).tolist()
 
     def _distanceCallback(self, from_idx, to_idx):
         """
@@ -31,7 +32,7 @@ class BASIC_MTSP():
     def _getSolution(self):
         """
         Print out path and path cost for each vehicle.
-        Note that distance are in meters
+        Note that distance are in km
         """
         # setup
         paths = dict()
@@ -51,10 +52,10 @@ class BASIC_MTSP():
             paths[vid].append(self.manager.IndexToNode(idx))
             total_cost += route_dist
             plan += '{}\n'.format(self.manager.IndexToNode(idx))
-            plan += 'Distance of the route: {}m\n'.format(route_dist)
+            plan += 'Distance of the route: {}km\n'.format(route_dist)
             print(plan)
             max_route_distance = max(route_dist, max_route_distance)
-        print('Maximum of the route distance: {}m'.format(max_route_distance))
+        print('Maximum of the route distance: {}km'.format(max_route_distance))
         return paths, total_cost
 
     def node2Coords(self, plan):
@@ -79,7 +80,7 @@ class BASIC_MTSP():
         Input:
         - start_coord: tuple (lat, lon) of starting coordinate
         - num_v: int, number of vehicles
-        - v_limits: list of float, list contains the distance limit (in meter)
+        - v_limits: list of float, list contains the distance limit (in km)
             of each vehicle
         Output:
         - paths: dictionary of the coord-based route for each vehicle
@@ -104,7 +105,7 @@ class BASIC_MTSP():
         self.routing.AddDimensionWithVehicleCapacity(
             transit_callback_idx,
             0,         # no slack
-            v_limits,  # vehicle maximum travel distance in meters
+            v_limits,  # vehicle maximum travel distance in km
             True,      # start cumul to zero
             dimension_name
         )

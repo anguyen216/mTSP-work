@@ -34,6 +34,8 @@ Examples of how the solvers should be run are shown in `main.py`.  The examples 
 #### For mTSP solver
 The current mTSP solver uses Google OR-tools library for Python to solve the mTSP problem.  **The distance matrix and vehicle limit distance need to be an integer for the solver to work correctly.**  The solver, besides returning the route for each vehicle in coordinate format, will print out the route (in node format) and distance traveled of each vehicle to the terminal for debugging.  Follow the `main.py` file to see how to extract route in coordinate format for your own use. 
 
+Currently, the solver output solution in `km` unit.  However, this unit can be ignored if you want to solve for solution with `meter` unit.  Just input integer meter values and ignore the printed out `km` unit in the terminal.  Just make sure that if you do this, everything should be in meter
+
 ---
 # Concepts and results
 ### Problem statement
@@ -84,9 +86,23 @@ For large set of nodes, the library can only approximate the solution.  This sol
 
 #### Example of solver output
 The block below shows an example of what the solver will print out to terminal
+
+Note that this output is for debugging purposes.  The solver return solution in coordinate-based format along with total distance in km
+```
+Route for vehicle 0: 
+ 14 ->  0 ->  10 ->  1 ->  2 ->  8 ->  4 ->  12 ->  13 ->  3 -> 14
+Distance of the route: 7500km
+
+Route for vehicle 1: 
+ 14 ->  7 ->  6 ->  11 ->  9 ->  5 -> 14
+Distance of the route: 8247km
+
+Maximum of the route distance: 8247km
+Total distance traveled by all vehicles: 15747 km
 ```
 
-```
+The image below visualize the above planned paths in coordinate-based format
+<img src='./plots/sample_mtsp_result.png' width="500">
 
 **Solver limitation**
 - This solver will only take in distance matrix and vehicle limits in integer format.  The implementation will still take distance function and distance matrix in float format, but the distance will be automatically round up to the next integer.  Please consider this when providing distance matrix and implementing your own distance function.

@@ -8,7 +8,7 @@ class BASIC_MTSP():
     Given a series of long-lat, number of vehicles, construct a
         connected graph with these waypoints and solve the mTSP
         problem given a fix depot for all vehicles
-    Note that distFunc should output distance in km
+    Note that distFunc should output distance in uniform unit
     """
     def __init__(self, coordinates, distFunc):
         # coordinates - array of lat-long of waypoints of interest
@@ -22,7 +22,7 @@ class BASIC_MTSP():
 
     def _distanceCallback(self, from_idx, to_idx):
         """
-        Returns the distance (in meters) between two nodes using
+        Returns the distance between two nodes using
             the input distance matrix
         """
         from_node = self.manager.IndexToNode(from_idx)
@@ -32,7 +32,7 @@ class BASIC_MTSP():
     def _getSolution(self):
         """
         Print out path and path cost for each vehicle.
-        Note that distance are in km
+        Note that distance are in uniform unit
         """
         # setup
         paths = dict()
@@ -52,10 +52,10 @@ class BASIC_MTSP():
             paths[vid].append(self.manager.IndexToNode(idx))
             total_cost += route_dist
             plan += '{}\n'.format(self.manager.IndexToNode(idx))
-            plan += 'Distance of the route: {}km\n'.format(route_dist)
+            plan += 'Distance of the route: {} \n'.format(route_dist)
             print(plan)
             max_route_distance = max(route_dist, max_route_distance)
-        print('Maximum of the route distance: {}km'.format(max_route_distance))
+        print('Maximum of the route distance: {}'.format(max_route_distance))
         return paths, total_cost
 
     def node2Coords(self, plan):
@@ -105,7 +105,7 @@ class BASIC_MTSP():
         self.routing.AddDimensionWithVehicleCapacity(
             transit_callback_idx,
             0,         # no slack
-            v_limits,  # vehicle maximum travel distance in km
+            v_limits,  # vehicle maximum travel distance
             True,      # start cumul to zero
             dimension_name
         )

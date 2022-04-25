@@ -9,13 +9,30 @@ def eucDist(v1, v2):
     x2, y2 = v2
     return np.sqrt( (x1 - x2)**2 + (y1 - y2)**2 )
 
-def longLatDist(p1, p2):
+def longLatDistKm(p1, p2):
     # compute the distance between 2 lat-long points in km
     # Inputs:
     #   - p1: (lat, long) of point 1
     #   - p2: (lat, long) of point 2
     # Ouput: float, distance in km
     R = 6371  # Earth's radius in km
+    lat1, lon1 = p1
+    lat2, lon2 = p2
+    rlat1 = np.radians(lat1)
+    rlat2 = np.radians(lat2)
+    dlat = np.radians(lat2 - lat1)
+    dlon = np.radians(lon2 - lon1)
+    a = np.sin(dlat/2)**2 + np.cos(rlat1)*np.cos(rlat2) * np.sin(dlon/2)**2
+    dist = 2 * R * np.arcsin(np.sqrt(a))
+    return dist
+
+def longLatDistM(p1, p2):
+    # compute the distance between 2 lat-long points in meters
+    # Inputs:
+    #   - p1: (lat, long) of point 1
+    #   - p2: (lat, long) of point 2
+    # Ouput: float, distance in meters
+    R = 6371000  # Earth's radius in meters
     lat1, lon1 = p1
     lat2, lon2 = p2
     rlat1 = np.radians(lat1)
@@ -80,7 +97,7 @@ def plotPath(path, plot_name):
     plt.savefig(plot_name, dpi=300)
     plt.show()
 
-def plotMultiplePaths(paths, colors, plot_name):
+def plotMultiplePaths(paths, colors, save_plot=False, plot_name="plot.png"):
     for i in range(len(paths)):
         route = paths[i]
         lons = np.array([coord[1] for coord in route])
@@ -88,8 +105,53 @@ def plotMultiplePaths(paths, colors, plot_name):
         plt.scatter(lons, lats)
         lab = 'vehicle ' + str(i) + ' route'
         plt.plot(lons, lats, '-', c=colors[i], label=lab)
-    plt.savefig(plot_name, dpi=300)
+    if save_plot:
+        plt.savefig(plot_name, dpi=300)
     plt.show()
+
+### TO-DO: add description for this class
+class samplingPointSim():
+    def __init__(self, bottom_left, top_right, num_samples, distFunc):
+        self.bot_lat, self.bot_lon = bottom_left
+        self.top_lat, self.top_lon = top_right
+        self.samples = sobolSamples(num_samples, bottom_left, top_right)
+        self.distFunc = distFunc
+
+    def getGrid(self, nrows, ncols):
+        rows = np.linspace(self.bot_lat, self.top_lat, num=nrows)
+        cols = np.linspace(self.bot_lon, self.top_lon, num=ncols)
+        # lats, lons
+        return rows, cols
+
+    def getCenters(self, lat_rows, lon_cols):
+        centers = []
+        for i in range(len(lat_rows) - 1):
+            for j in range(len(lon_cols) - 1):
+                lat = lat_rows[i] + lat_rows[i+1]
+                lon = lon_cols[j] + lon_cols[j+1]
+                centers.append([lat/2, lon/2])
+        self.centroids = np.array(centers)
+
+    def getNearest(self, centroid, chosen):
+        min_dist = float("inf")
+        closest = None
+        for point in self.samples:
+            if tuple(point) not in chosen:
+                dist = self.distFunc(point, centroid)
+                if dist < min_dist:
+                    min_dist = dist
+                    closest = point
+        chosen.add(tuple(closest))
+        return closest
+
+    def nearest2Centroids(self, nrows, ncols):
+        rows, cols = self.getGrid(nrows, ncols)
+        self.getCenters(rows, cols)
+        chosen = set()
+        nearests = []
+        for point in self.centroids:
+            nearests.append(self.getNearest(point, chosen))
+        return np.array(nearests)
 
 # bot = (38.907192, -77.036873)  # DC
 # top = (40.712776, -74.005974)  # NYC

@@ -25,15 +25,19 @@ def main():
     #   depot
     num_samples = 20
     nrows, ncols = 5, 3
-    sim = samplingPointSim(bot_left, top_right, num_samples, longLatDistM)
+    boat_dist = 3000  # 3000 meters
+    drone_dist = 3000
+    ndrones = 3
+    single_drone_cap = 5
+    seed = 66  # to create reproduceable result, can be randomized
+    sim = samplingPointSim(bot_left, top_right, num_samples, longLatDistM, seed)
     samples = sim.samples.tolist()
     samples = [tuple(p) for p in samples]
     boat_points = sim.nearest2Centroids(nrows, ncols).tolist()
     boat_points = [tuple(p) for p in boat_points]
     drone_points = [tuple(p) for p in samples if p not in boat_points]
-    boat_dist = 3000  # 3000 meters
-    drone_dist = 3000
-    ndrones = 4
+    boat_caps = [len(boat_points)]
+    drone_caps = [single_drone_cap for _ in range(ndrones)]
     drone_dists = [drone_dist] * ndrones
     depot = boat_points[0]
     drone_points.append(depot)
@@ -41,8 +45,8 @@ def main():
     # creating solvers and getting solution paths
     boat_solver = BASIC_MTSP(boat_points, longLatDistM)
     drone_solver = BASIC_MTSP(drone_points, longLatDistM)
-    boat_sol = boat_solver.solve(depot, 1, [boat_dist])
-    drone_sol = drone_solver.solve(depot, ndrones, drone_dists)
+    boat_sol = boat_solver.solve(depot, 1, [boat_dist], caps=boat_caps)
+    drone_sol = drone_solver.solve(depot, ndrones, drone_dists, caps=drone_caps)
 
     # plotting results
     if boat_sol:
@@ -52,7 +56,7 @@ def main():
     drone_paths[ndrones] = boat_path[0]
     colors = ["steelblue"] * ndrones
     colors.append("orange")
-    pname = "./plots/simulated_samples_sol.png"
+    pname = "./plots/simulated_samples_sol_cap_constraint.png"
     plotMultiplePaths(drone_paths, colors, save_plot=True, plot_name=pname)
 
 

@@ -14,10 +14,10 @@ class BASIC_MTSP():
         # coordinates - array of lat-long of waypoints of interest
         self.vertices_dict = {i: coord for i, coord in enumerate(coordinates)}
         self.coords_dict = {coord: i for i, coord in enumerate(coordinates)}
-        self.data = dict()
-        mat = constructGraph(self.vertices_dict, distFunc)
         # convert distance matrix to integer values; values are round
         #   up to the next integer
+        self.data = dict()
+        mat = constructGraph(self.vertices_dict, distFunc)
         self.data['distance_matrix'] = np.ceil(mat).astype(int).tolist()
 
     def _distanceCallback(self, from_idx, to_idx):
@@ -28,6 +28,13 @@ class BASIC_MTSP():
         from_node = self.manager.IndexToNode(from_idx)
         to_node = self.manager.IndexToNode(to_idx)
         return self.data['distance_matrix'][from_node][to_node]
+
+    def _demandCallback(self, from_idx):
+        """
+        Returns the demand of the node
+        """
+        from_node = self.manager.IndexToNode(from_idx)
+        return self.data['demands'][from_node]
 
     def _getSolution(self):
         """
@@ -72,47 +79,74 @@ class BASIC_MTSP():
             path[i] = [self.vertices_dict[node] for node in plan[i]]
         return path
 
-    def solve(self, start_coord, num_v, v_limits, time_limit=30):
+    def solve(self, start_coord, numv, vdists, demand=None, caps=None, time_limit=30):
         """
         Given starting coordinate, number of vehicle and distance limit
             of each vehicle, solve the mTSP problem. Note that the solution
             for large number of node is an approximation
         Input:
         - start_coord: tuple (lat, lon) of starting coordinate
-        - num_v: int, number of vehicles
-        - v_limits: list of float, list contains the distance limit (in km)
+        - numv: int, number of vehicles
+        - vdists: list of float, list contains the distance limit
             of each vehicle
+        - demand: list of int, indicating the demand at each location
+            None as default, populate demand to be 1 for each location
+        - caps: list of int, indicating the capacity of each vehicle
+            None as default, populate capacity to be number of nodes in
+            the graph
+        - time_limit: int, indicating the time limit in seconds for the
+            solver to explore solutions.  Default is 30s
         Output:
         - paths: dictionary of the coord-based route for each vehicle
         - total_cost: the total distance traveled by all vehicles
         """
-        # basic setup
+        ### basic setup
         start = self.coords_dict[start_coord]
         self.data['depot'] = start
         num_nodes = len(self.coords_dict)
-        self.data['num_vehicles'] = num_v
+        self.data['num_vehicles'] = numv
+        if not demand:
+            self.data['demands'] = [1 for _ in range(num_nodes)]
+        else:
+            self.data['demands'] = demand
+        if not caps:
+            self.data['vehicle_capacities'] = [num_nodes for _ in range(numv)]
+        else:
+            self.data['vehicle_capacities'] = caps
 
+        ### solver setup
         # create routing index manager
-        self.manager = pywrapcp.RoutingIndexManager(num_nodes, num_v, start)
+        self.manager = pywrapcp.RoutingIndexManager(num_nodes, numv, start)
         # create routing model
         self.routing = pywrapcp.RoutingModel(self.manager)
         transit_callback_idx = self.routing.RegisterTransitCallback(self._distanceCallback)
         # define cost of each arc
         self.routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_idx)
+        demand_callback_idx = self.routing.RegisterUnaryTransitCallback(self._demandCallback)
 
+        ### add constraints
         # add distance constraint
         dimension_name = 'Distance'
         self.routing.AddDimensionWithVehicleCapacity(
             transit_callback_idx,
             0,         # no slack
-            v_limits,  # vehicle maximum travel distance
+            vdists,    # vehicle maximum travel distance
             True,      # start cumul to zero
             dimension_name
         )
         distance_dimension = self.routing.GetDimensionOrDie(dimension_name)
         # TODO: figure out why the input parameter below is 100
         distance_dimension.SetGlobalSpanCostCoefficient(100)
+        # add capacity constraint
+        self.routing.AddDimensionWithVehicleCapacity(
+            demand_callback_idx,
+            0,         # null capacity slack
+            self.data['vehicle_capacities'],
+            True,      # start cumul to zero
+            'Capacity'
+        )
 
+        ### heuristic setup
         # setting first solution heuristic
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
         # using guided search with time_limit of 30 seconds to get out
@@ -121,7 +155,7 @@ class BASIC_MTSP():
         search_parameters.time_limit.seconds = time_limit
         search_parameters.log_search = False
 
-        # get solution
+        ### get solution
         self.solution = self.routing.SolveWithParameters(search_parameters)
         if self.solution:
             plan, total_cost = self._getSolution()

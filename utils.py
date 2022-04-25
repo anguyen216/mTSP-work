@@ -61,17 +61,19 @@ def constructGraph(vertices_dict, distFunc):
                 G[i][j] = distFunc(p1, p2)
     return G
 
-def sobolSamples(num_samples, min_point, max_point):
+def sobolSamples(num_samples, min_point, max_point, seed=31):
     # given number of samples, min_point and max_point
     # output samples that have low discrepancy/high spread
     # Input:
     #   - num_samples - int: best if it's a power of 2
     #   - min_point - [lat, lon] of the bottom left of a squared area
     #   - max_point - [lat, lon] of the top right of a squared area
+    #   - seed - int: make the result predictable and produceable
     # Output: np.array of sample points that are widespread over the
     #   squared area of interest
-    sampler = qmc.Sobol(d=2)
+    sampler = qmc.Sobol(d=2, seed=seed)
     pow = int(np.ceil(np.log2(num_samples)))
+    np.random.seed(seed)
     indices = np.random.choice(2**pow, num_samples, replace=False)
     points = sampler.random_base2(m=pow)
     points = points[indices, :]
@@ -111,10 +113,10 @@ def plotMultiplePaths(paths, colors, save_plot=False, plot_name="plot.png"):
 
 ### TO-DO: add description for this class
 class samplingPointSim():
-    def __init__(self, bottom_left, top_right, num_samples, distFunc):
+    def __init__(self, bottom_left, top_right, num_samples, distFunc, seed=31):
         self.bot_lat, self.bot_lon = bottom_left
         self.top_lat, self.top_lon = top_right
-        self.samples = sobolSamples(num_samples, bottom_left, top_right)
+        self.samples = sobolSamples(num_samples, bottom_left, top_right, seed=seed)
         self.distFunc = distFunc
 
     def getGrid(self, nrows, ncols):

@@ -1,16 +1,18 @@
-# mTSP-work
-keeping track of algorithm implementations for mTSP (multiple travelling salesmen)
+# Initial water sampling routes for team of robots
+The task of routing a team of robot for water sampling in this repository is modeled after the [multiple travelling salesmen problem](https://neos-guide.org/content/multiple-traveling-salesman-problem-mtsp) (mTSP).  The formulation of the task is summarized below
 
-### To-dos
-- [x] Implementations of deterministic and heuristic approaches for TSP problem
-- [x] Results of TSP approaches
-- [x] Add sampling function to create a series of interest points that are widespread given a squared boundary of area of interest
-- [x] Add requirements to run the solvers in this repo
-  - [ ] Update requirements to run the solvers in this repo
-- [ ] Enforce resource/distance constraint
-- [ ] Implementations of approaches for mTSP problem
-  - [ ] decomposition
-  - [x] approximation with uniform distance constraint
+Given `N (N >= 1)` robots and `C (C >= 4)` sampling points that needs to be visited, find an optimal route for each robot that meet the following requirements:
+  1. each sampling point is visited exactly once
+  2. all robots start and finish their route at the same city
+  3. each robot has its own limitations including:
+      * maximum travel distance per tour and 
+      * maximum number of samples per tour
+  4. each robot can visit any sampling point from any other points on the site of interest
+  5. the total distance of each tour is the shortest distance that meets the above requirement
+
+The final implementation to create the sampling route for each robot utlized [Google OR-tools](https://developers.google.com/optimization).  However, there are other solvers in this repository that solve the mTSP and TSP; `solvers_examples.py` includes examples of how to use these solvers.
+
+Additionally, this repository includes a simulation to generate sampling points within a given rectangle boundary. 
 
 # Requirements
 ```
@@ -18,76 +20,84 @@ python=3.10.2
 matplotlib=3.5.1
 numpy=1.22.3
 scipy=1.7.3
-mip=1.13.0
+mip=1.13.0  # if you want to run mixed-integer solver
 ```
 
-Google OR-tools.  Documentation of this library can be found [here](https://developers.google.com/optimization)
-
-Installation
+Google OR-tools installation
 ```
 python -m pip install --upgrade --user ortools
 ```
 
+# Implementation
+### Routing task solver
+The solver implementation relied on Google OR-tools; tutorials on how to use the tool for this problem can be found [here](https://developers.google.com/optimization/routing).  However, the implentation incorporates two constraints (total distance and maximum number of sampling points per tour) instead of one (like the examples on Google's tutorials page).  Additionally, Goole OR-tools solver use an approximation algorithm instead of an exact algorithm.  The result of the solver depends on the heuristic method used.  This implementation used [guided local search](http://en.wikipedia.org/wiki/Guided_Local_Search) for solutions exploration because the method has a custom time limit for running and can get out of local optima.  Google OR-tools provide other [local search options](https://developers.google.com/optimization/routing/routing_options#local_search_options).
+
+The solver used in the final result is for multiple vehicle problem.  However, since mTSP is just an extension of TSP, the solver can also solve for TSP.  The implementation requires that coordinates of sampling points in the area of interest be in the tuple format. In the case of this specific application, coordinates are in `(lat, lon)`.  The solver can take other forms of coordinates.  Additionally, user must supply their own function for computing distance between points.  The `utils.py` provides 3 distance functions: one for computing Euclidean distance between `(x, y)` coordinates, one for computing `lat-lon` distance in km, and one for computing `lat-lon` distance in meters.  `lat-lon` distance functions use the assumption that the Earth's radius is 6371 km (or 6371000 meters); this is not the exact measurement and may introduce some numerical deviation from the actual distance.  Supply your own calculation in a custom function if you seek a more accurate measurement.
+
+This solver will only take in distance matrix and vehicle limits in integer format.  The implementation will still take distance function and distance matrix in float format, but the distance will be automatically round up to the next integer.  Please consider this when providing distance matrix and implementing your own distance function.  This solver looks for a solution that covers all given points of interest.  If no such solution exist, it is considered to have no solution.  The solver will not drop points for you to create a solution.  Please consider this when providing points of interest and vehicle's distance limit.
+
+Since different types of robot/vehicle are subjected to different set of sampling points, two solvers were used in the final workflow/result: one for drone and the other for boat.
+
+### Sampling points simulation
+The sampling point simulation was created to create sampling points for testing the routing task solver's behaviors.  Given a rectangle boundary in coordinate format (in this case, in `lat-lon` format) that is defined by the `min_point = bottom left of the rectangle` and `max_point = top right of the rectangle`, the number of sampling points, distance function to calculate the distance beween points, the simulation outputs (1) a set of "random" sampling points such that the points spread out over the entire area of interest, and (2) a set of sampling points for the surface vehicle (a boat, in this specific application).
+
+(1) The set of "random" sampling points is sampled/created using [Sobol sampling method](https://en.wikipedia.org/wiki/Sobol_sequence?fbclid=IwAR2Ox5HG1ips06baMlu4NbSiTC5oXCOQqFhn3RG7x3LYnTOd5kx0L5A1ilM).  The implementation of this algorithm is from Scipy (v1.7.3+).  Additionally, since this implementation can only output numbers of sampling points that are powers of 2, and sometime this is not the case for what is needed, some randomization is introduced to the sampled outputs.  More specifically, given that we want `k` sampling points in the area of interest, where `k` is any integer and `k > 0`, Sobol is used to sample `m` samples where `m` is a power of 2 and `m >= k`.  If `m >= k`, randomization (with a uniform probability) is used to randomly pick `k` points to be in the final set of sampling points.
+
+(2) The set of sampling points for the surface vehicle (a boat, in this case) is chosen from the set of sampling points in (1).  Points in set (2) are chosen by first dividing the area of interest into equal-size rectangles (the number of rectangles is determined by user and how many sampling points they want to boat/surface vehicle to have).  Next, the centroids of the smaller rectangles are determined using the following formula `centroid_lat = (corner1_lat + corner2_lat) / 2` and `centroid_lon = (corner1_lon + corner2_lon) / 2`.  These formula disregard the curvature of the Earth in computing the centroid' lat-lon.  The reason for this is that due to the capacity and resource constraints of the robots, we assume the size of the area of interest is relatively small enough to be considered as a flat surface.  Once the coordinates of the centroids are known, sampling points for surface vehicle are determined by choosing points that are closest to the centroids.
+
+The rest of the sampling points (those that aren't assigned to the surface vehicle will be assigned to the other type of vehicle)
+
 # How to run the code 
-Examples of how the solvers should be run are shown in `main.py`.  The examples are run using random cities coordinates (included in `cities.py`).  A custom `main` file can be written to run the solvers based on your specific need.  The current solvers will take in both `xy-coordinate` and `longitude-latitude coordinates`.  Currently, the distance between points of interest are computed using either Euclidian distance or earth surface distance formula.  If the distance between your points of interest are computed differently, please supply the distance function yourself and use it as input for the solvers.
+The final workflow and example are presented in `main.py`.  The example used the sampling point simulation to create a set of sampling points and used the `MTSP_BASIC` solver to get the routing for each vehicle.  There are 5 required paramteres for the sampling simulation, details below.  
 
-#### For mTSP solver
-The current mTSP solver uses Google OR-tools library for Python to solve the mTSP problem.  **The distance matrix and vehicle limit distance need to be an integer for the solver to work correctly.**  The solver, besides returning the route for each vehicle in coordinate format, will print out the route (in node format) and distance traveled of each vehicle to the terminal for debugging.  Follow the `main.py` file to see how to extract route in coordinate format for your own use. 
+```
+### Boundary coordinates of site of interest (Ottway site, specifically) in (lat, lon) format
+bot_left = (34.784027, -76.571366)
+top_right = (34.786204, -76.569048)
 
-Currently, the solver output solution in `km` unit.  However, this unit can be ignored if you want to solve for solution with `meter` unit.  Just input integer meter values and ignore the printed out `km` unit in the terminal.  Just make sure that if you do this, everything should be in meter
+# number of sampling points wanted for sampling point simulation to generate
+# the number of sampling points for surface vehicle and how the area of interest should be divided (in terms of how many rows and columns)
+#   num_grids = (nrows - 1) x (ncols - 1)
+#   num_surface_vehicle_sampling_points = num_grids
+# the distance function used to compute distance between points of interest
+num_samples = 20
+nrows, ncols = 5, 3
+distFunc = longLatDistM
+```
 
----
-# Concepts and results
-### Problem statement
-Given `N (N >= 1)` salesmen and `C (C >= 4)` cities that needs to be visited, find an optimal route for each saleman that meet the following requirements:
-  1. each city is visited exactly once
-  2. all salesmen start and finish their route at the same city
-  3. the total distance of each tour is the shortest distance that meets the above requirement
-Given that (1) the salesmen can visit any city from any other cities in the network; and (2) each salesman may have their own limitation in terms of resources (e.g., salesman i-th can only cover d distance).
+There are 5 required paramteres for the sampling simulation, details below.  Note that the numbers for distance capacity for each vehicle can be in any unit, **but they have to be integers and in uniform unit**
 
-This type of problem is considered to be NP-hard. Read more on the problem [here](https://en.wikipedia.org/wiki/Travelling_salesman_problem) and [here](https://neos-guide.org/content/multiple-traveling-salesman-problem-mtsp)
+```
+# the distance capacity of each vehicle. 
+# number of vehicles for a solver
+# the set of points of interest for the solver
+# the distance function used to compute distance between points of interest
+# coordinate of depot
+boat_dist = 3000
+drone_dist = 3000
+ndrones = 3
+points_of_interest = samplingPointSim output
+distFunc = longLatDistM
+depot = (lat, lon)
+```
 
-# Approaches
-There are several ways to solve mTSP, but one basic solution is to build from the solution of the TSP (travelling saleman) problem, where `N = 1`.
+There are other optional parameters, details below.  Note that the sampling capacity for each vehicle includes the depot, and **capacity constraints and demand/available samples at each point of interest must be integers**
 
-## Approaches for TSP problem
-TSP is a specific case of mTSP (or mTSP is a generic case of TSP) in which `N = 1`.  All other constraints remain.  Compares to mTSP, TSP is a smaller and simpler problem; however, it's NP complexity remains.  There are several approaches for solving TSP problem.  The two main approaches are exact solution (deterministic approach) and near-optimal solution (heuristics).
-The following list the algorithms included in this repository for solving the TSP problem.
+```
+# Sampling capacity of each vehicle
+# A randomization seed to create reproducible results
+# Maximum time limit (in second) for the solver to search for solution
+# Demand or available samples at each points of interest
+single_drone_cap = 6
+seed = 66
+time_limit = 30
+demands = List(int)
+```
 
-### Exact solution using Dynamic Programming (DP)
-The details of the algorithm can be found [here](https://en.wikipedia.org/wiki/Held%E2%80%93Karp_algorithm#:~:text=The%20Held%E2%80%93Karp%20algorithm%2C%20also,to%20find%20a%20minimum%2Dlength)
+In this specific application, we assume that only one sample is available at each point of interest.  If vehicle capacity is not supplied, vehicles' capacities will be populated to assure that a solution exists, given that a solution exists for the distance constraint.
 
-Since this algorithm seeks to find the exact solution, its runtime is still non-polynomial.  Out of all the algorithm included in this repository, this is the most inefficient algorithm in terms of runtime.  The following graph presents the runtime of the algorithm as the sample size (number of cities) increases
+The block below shows an example of what the solver will print out to terminal.  Note that this output is for debugging purposes and it does not include the print out for sample loadings even though sample loading is a constraint for the solver and is being solver alongside distant constraint.  The solver return solution in coordinate-based format along with total distance
 
-<img src="./plots/dp_tsp_runtime.png" width="500">
-
-### Exact solution using ILP (linear Integer Programming)
-The details of the algorithm can be found [here](https://python-mip.readthedocs.io/en/latest/examples.html)
-
-Again since the algorithm seeks to find the exact solution, its runtime remains non-polynomial.  However, this approach is significantly faster the DP approach and can solve instances with larger sample sizes.  The following graph presents the runtime of the algorithm as the sample size increases
-
-<img src="./plots/ilp_tsp_runtime.png" width="500">
-
-### Approximation solution using OPT-2 algorithm
-The details of the algorithm can be found [here](https://en.wikipedia.org/wiki/2-opt)
-
-The algorithm seeks to find near-optimal solution.  This improve the runtime significantly.  However, the algorithm's performance (in terms of finding the near-optimal and optimal solution) relies on an initial randomized route.  The algorithm can get stuck in a non-near-optimal pitfall and has no mechanism to get out of that pitfall.  To decrease the algorithm sensitivity to randomization, the `opt2` solver is run 10 times with 10 different initial randomized routes.  The following graph presents the runtime of the algorithm as the sample size increase. 
-
-<img src="./plots/opt2_tsp_runtime.png" width="500">
-
-Additionally, the following graph investigate the solutions output by this algorithm when compare to the exact solution (output by ILP solver)
-
-<img src="./plots/opt2_cost_check.png" width="500">
-
-## Approach for mTSP problem
-The mTSP solver used in this repo relied on Google OR-tools for Python.  More information on this library can be found [here](https://developers.google.com/optimization)
-
-For large set of nodes, the library can only approximate the solution.  This solver uses the `guided local search` (more info [here](https://developers.google.com/optimization/routing/routing_options#local_search_options), and [here](https://en.wikipedia.org/wiki/Guided_Local_Search)).  By default, the solver will return a solution (or report that no solution is found) within 30 seconds.  However, this can be changed by changing `time_limit` parameter of the solver.
-
-#### Example of solver output
-The block below shows an example of what the solver will print out to terminal
-
-Note that this output is for debugging purposes.  The solver return solution in coordinate-based format along with total distance in km
 ```
 Route for vehicle 0: 
  14 ->  0 ->  10 ->  1 ->  2 ->  8 ->  4 ->  12 ->  13 ->  3 -> 14
@@ -101,10 +111,30 @@ Maximum of the route distance: 8247km
 Total distance traveled by all vehicles: 15747 km
 ```
 
-The image below visualize the above planned paths in coordinate-based format
-<img src='./plots/sample_mtsp_result.png' width="500">
+The image below visualize the planned paths for as setting of 3 aerial vehicles (blue) and 1 surface vehicle (orange) in coordinate-based format
 
-**Solver limitation**
-- This solver will only take in distance matrix and vehicle limits in integer format.  The implementation will still take distance function and distance matrix in float format, but the distance will be automatically round up to the next integer.  Please consider this when providing distance matrix and implementing your own distance function.
-- Additionally, because of the above, please only provide `v_limits` in integer format
-- This solver looks for a solution that covers all given nodes (in the `waypoints` list).  If no such solution exist, it is considered to have no solution.  The solver will not drop points for you to create a solution.  Please consider this when providing `waypoints` and `v_limits`
+<img src='./plots/simulated_samples_sol_cap_constraint.png' width="500">
+
+# Reference
+```
+@software{ortools,
+  title = {OR-Tools},
+  version = {7.2},
+  author = {Laurent Perron and Vincent Furnon},
+  organization = {Google},
+  url = {https://developers.google.com/optimization/},
+  date = {2019-7-19}
+}
+```
+
+# Citation
+```
+@software{Initial_Water_Sampling_Routes_for_Team_of_Robots_2022,
+  author = {Anh Nguyen},
+  month = {04},
+  title = {{Initial Water Sampling Routes for Team of Robots}},
+  url = {https://github.com/anguyen216/mTSP-work},
+  version = {0.0.1},
+  year = {2022}
+}
+`

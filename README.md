@@ -111,7 +111,7 @@ Maximum of the route distance: 8247km
 Total distance traveled by all vehicles: 15747 km
 ```
 
-The image below visualize the planned paths for as setting of 3 aerial vehicles (blue) and 1 surface vehicle (orange) in coordinate-based format
+The image below visualize the planned paths for each vehicle with a setting of 3 aerial vehicles (blue) and 1 surface vehicle (orange) in coordinate-based format
 
 <img src='./plots/simulated_samples_sol_cap_constraint.png' width="500">
 

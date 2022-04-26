@@ -28,7 +28,7 @@ def main():
     boat_dist = 3000  # 3000 meters
     drone_dist = 3000
     ndrones = 3
-    single_drone_cap = 5
+    single_drone_cap = 6
     seed = 66  # to create reproduceable result, can be randomized
     sim = samplingPointSim(bot_left, top_right, num_samples, longLatDistM, seed)
     samples = sim.samples.tolist()
@@ -36,7 +36,7 @@ def main():
     boat_points = sim.nearest2Centroids(nrows, ncols).tolist()
     boat_points = [tuple(p) for p in boat_points]
     drone_points = [tuple(p) for p in samples if p not in boat_points]
-    boat_caps = [len(boat_points)]
+    boat_caps = [len(boat_points) + 1]
     drone_caps = [single_drone_cap for _ in range(ndrones)]
     drone_dists = [drone_dist] * ndrones
     depot = boat_points[0]

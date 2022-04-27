@@ -15,6 +15,19 @@ Given `N (N >= 1)` robots and `C (C >= 4)` sampling points that needs to be visi
   5. the total distance of each tour is the shortest distance that meets the above requirement
 
 ### Mathematical formulation
+Consider a graph `G=(V,E)` where `V` is the set of `C (C ≥ 4)` nodes, and `E` is the set of edges between these nodes. The depot is encoded as node 1. There are `N (N ≥ 1)` agents all starting and finishing their tours at the depot.
+
+Objective function
+
+<img src='./equations/objective.png' width="200">
+
+Where
+
+<img src='./equations/notations.png' width="400">
+
+Constraints
+
+<img src='./equations/constraints.png' width="700">
 
 
 # Requirements

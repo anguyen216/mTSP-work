@@ -1,4 +1,8 @@
 # Initial water sampling routes for team of robots
+The final implementation to create the sampling route for each robot utlized [Google OR-tools](https://developers.google.com/optimization).  However, there are other solvers in this repository that solve the mTSP and TSP; `solvers_examples.py` includes examples of how to use these solvers.
+
+Additionally, this repository includes a simulation to generate sampling points within a given rectangle boundary. 
+
 The task of routing a team of robot for water sampling in this repository is modeled after the [multiple travelling salesmen problem](https://neos-guide.org/content/multiple-traveling-salesman-problem-mtsp) (mTSP).  The formulation of the task is summarized below
 
 Given `N (N >= 1)` robots and `C (C >= 4)` sampling points that needs to be visited, find an optimal route for each robot that meet the following requirements:
@@ -10,9 +14,8 @@ Given `N (N >= 1)` robots and `C (C >= 4)` sampling points that needs to be visi
   4. each robot can visit any sampling point from any other points on the site of interest
   5. the total distance of each tour is the shortest distance that meets the above requirement
 
-The final implementation to create the sampling route for each robot utlized [Google OR-tools](https://developers.google.com/optimization).  However, there are other solvers in this repository that solve the mTSP and TSP; `solvers_examples.py` includes examples of how to use these solvers.
+### Mathematical formulation
 
-Additionally, this repository includes a simulation to generate sampling points within a given rectangle boundary. 
 
 # Requirements
 ```

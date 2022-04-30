@@ -29,6 +29,7 @@ Constraints
 
 <img src='./equations/constraints.png' width="700">
 
+Additionally, for this project, points of interest are separated for each type of vehicle before feeding them into mTSP solvers.  More sepecifically, boat robot is assigned points that are spread out over the entire site; the rest of the sampling points are assigned to drones.  The reason for this is that different type of vehicle (in this case boat vs. drone) has different sampling agenda that cannot be easily formulated into a mathematical constraint for the solver. The method of splitting sampling points is described in `Implementation` section.
 
 # Requirements
 ```

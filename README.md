@@ -61,7 +61,9 @@ The sampling point simulation was created to create sampling points for testing 
 
 (2) The set of sampling points for the surface vehicle (a boat, in this case) is chosen from the set of sampling points in (1).  Points in set (2) are chosen by first dividing the area of interest into equal-sized rectangles (the number of rectangles is determined by user and how many sampling points they want the boat/surface vehicle to have).  Next, the centroids of the smaller rectangles are determined using the following formula `centroid_lat = (corner1_lat + corner2_lat) / 2` and `centroid_lon = (corner1_lon + corner2_lon) / 2`.  These formula disregard the curvature of the Earth in computing the centroid's lat-lon coordinate.  The reason for this is that due to the capacity and resource constraints of the robots, it is assumed the size of the area of interest is relatively small enough to be considered as a flat surface.  Once the coordinates of the centroids are known, sampling points for surface vehicle are determined by choosing points in (1) that are closest to the centroids.
 
-The rest of the sampling points (those that aren't assigned to the surface vehicle) will be assigned to the other type of vehicle.
+The rest of the sampling points (those that aren't assigned to the surface vehicle) will be assigned to the other type of vehicle.  The gif below shows an example of the simulation and its intermediate steps to produce sampling points for each type of vehicle.
+
+<img src='./plots_samples/steps.gif' width="500">
 
 # How to run the code 
 The final workflow and example are presented in `main.py`.  The example used the sampling point simulation to create a set of sampling points and used the `MTSP_BASIC` solver to get the routing for each vehicle.  There are 5 required paramteres for the sampling simulation, details below.  

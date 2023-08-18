@@ -5,7 +5,7 @@ Additionally, this repository includes a simulation to generate sampling points 
 
 The task of routing a team of robot for water sampling in this repository is modeled after the [multiple travelling salesmen problem](https://neos-guide.org/content/multiple-traveling-salesman-problem-mtsp) (mTSP).  The formulation of the task is summarized below
 
-Given `N (N >= 1)` robots and `C (C >= 4)` sampling points that needs to be visited, find an optimal route for each robot that meet the following requirements:
+Given `m (m >= 1)` robots and `N (N >= 4)` sampling points that need to be visited, find an optimal route for each robot that meet the following requirements:
   1. each sampling point is visited exactly once
   2. all robots start and finish their route at the same depot
   3. each robot has its own limitations including:
@@ -15,7 +15,7 @@ Given `N (N >= 1)` robots and `C (C >= 4)` sampling points that needs to be visi
   5. the total distance of each tour is the shortest distance that meets the above requirement
 
 ### Mathematical formulation
-Consider a graph `G=(V,E)` where `V` is the set of `C (C ≥ 4)` nodes, and `E` is the set of edges between these nodes. The depot is encoded as node 1. There are `N (N ≥ 1)` agents all starting and finishing their tours at the depot.
+Consider a graph `G=(V,E)` where `V` is the set of `N (N ≥ 4)` nodes, and `E` is the set of edges between these nodes. The depot is encoded as node 1. There are `m (m ≥ 1)` agents all starting and finishing their tours at the depot.
 
 Objective function
 
@@ -28,6 +28,12 @@ Where
 Constraints
 
 <img src='./equations/constraints.png' width="700">
+
+* Constraint (2) ensures that all agents start at a depot (i.e., exactly `m` agents start at the depot, usually denoted as node 1).
+* Constraint (3) ensures that all agents finish at the depot.
+* Constraint (4) ensures that each node is visited exactly one.
+* Constraint (5) ensures that the total distance traveled for each agent does not exceed the agent's distance capacity.
+* Constraint (6) eliminates subtours, or solutions that do not visit all points.
 
 Additionally, for this project, points of interest are separated for each type of vehicle before feeding them into mTSP solvers.  More sepecifically, boat robot is assigned points that are spread out over the entire site; the rest of the sampling points are assigned to drones.  The reason for this is that different type of vehicle (in this case boat vs. drone) has different sampling agenda that cannot be easily formulated into a mathematical constraint for the solver. The method of splitting sampling points is described in `Implementation` section.
 
@@ -58,7 +64,7 @@ Since different types of robot/vehicle are subjected to different set of samplin
 ### Sampling points simulation
 The sampling point simulation was created to create sampling points for testing the routing task solver's behaviors.  Given a rectangle boundary in coordinate format (in this case, in `lat-lon` format) that is defined by the `min_point = bottom left of the rectangle` and `max_point = top right of the rectangle`, the number of sampling points, distance function to calculate the distance beween points, the simulation outputs (1) a set of "random" sampling points such that the points spread out over the entire area of interest, and (2) a set of sampling points for the surface vehicle (a boat, in this specific application).
 
-(1) The set of "random" sampling points is sampled/created using [Sobol sampling method](https://en.wikipedia.org/wiki/Sobol_sequence?fbclid=IwAR2Ox5HG1ips06baMlu4NbSiTC5oXCOQqFhn3RG7x3LYnTOd5kx0L5A1ilM).  The implementation of this algorithm is from Scipy (v1.7.3+).  Additionally, since this implementation can only output numbers of sampling points that are powers of 2, and sometime this is not the case for what is needed, some randomization is introduced to the sampled outputs.  More specifically, given that we want `k` sampling points in the area of interest, where `k` is any integer and `k > 0`, Sobol is used to sample `m` samples where `m` is a power of 2 and `m >= k`.  If `m > k`, randomization (with a uniform probability) is used to randomly pick `k` points to be in the final set of sampling points.
+(1) The set of "random" sampling points is sampled/created using [Sobol sampling method](https://en.wikipedia.org/wiki/Sobol_sequence?fbclid=IwAR2Ox5HG1ips06baMlu4NbSiTC5oXCOQqFhn3RG7x3LYnTOd5kx0L5A1ilM).  The implementation of this algorithm is from Scipy (v1.7.3+).  Additionally, since this implementation can only output numbers of sampling points that are powers of 2, and sometimes this is not the case for what is needed, some randomization is introduced to the sampled outputs.  More specifically, given that we want `k` sampling points in the area of interest, where `k` is any integer and `k > 0`, Sobol is used to sample `N` samples where `N` is a power of 2 and `N >= k`.  If `N > k`, randomization (with a uniform probability) is used to randomly pick `k` points to be in the final set of sampling points.
 
 (2) The set of sampling points for the surface vehicle (a boat, in this case) is chosen from the set of sampling points in (1).  Points in set (2) are chosen by first dividing the area of interest into equal-sized rectangles (the number of rectangles is determined by user and how many sampling points they want the boat/surface vehicle to have).  Next, the centroids of the smaller rectangles are determined using the following formula `centroid_lat = (corner1_lat + corner2_lat) / 2` and `centroid_lon = (corner1_lon + corner2_lon) / 2`.  These formula disregard the curvature of the Earth in computing the centroid's lat-lon coordinate.  The reason for this is that due to the capacity and resource constraints of the robots, it is assumed the size of the area of interest is relatively small enough to be considered as a flat surface.  Once the coordinates of the centroids are known, sampling points for surface vehicle are determined by choosing points in (1) that are closest to the centroids.
 
